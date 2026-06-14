@@ -217,7 +217,6 @@ with st.sidebar:
     st.markdown("### 📚 Quick Links")
     st.markdown("- [README](README.md)")
     st.markdown("- [Architecture](docs/architecture.md)")
-    st.markdown("- [Demo Script](docs/demo_script.md)")
 
 # ---------------------------------------------------------------------------
 # Hero Header

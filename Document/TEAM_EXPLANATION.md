@@ -198,11 +198,7 @@ schema-aware-test-data-generator/
 │   ├── TEAM_EXPLANATION.md        ← THIS FILE
 │   ├── architecture.md            ← Architecture diagram
 │   ├── assumptions_limitations.md ← Scope limits (e.g., circular dependencies)
-│   ├── demo_script.md             ← Step-by-step demonstration script
 │   └── prompts_used.md            ← Prompt engineering logs
-│
-├── Team/
-│   └── team_info.md               ← Team members and structure
 │
 ├── Project/
 │   ├── backend/                   ← FastAPI service
