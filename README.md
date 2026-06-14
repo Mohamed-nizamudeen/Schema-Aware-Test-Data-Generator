@@ -38,13 +38,13 @@ To keep the application lightning-fast and cost-effective, the system uses two e
 
 This full-stack application was built collaboratively by a team of four, divided by project priorities:
 
-1.  **🔴 Core Engine & Backend API (Priority 1 - Lead):**
+1.  **🔴 Core Engine & Backend API:**
     *   Designed the FastAPI server, DDL parser, topological dependency resolver, and AI-Faker hybrid logic.
-2.  **🟡 Frontend User Interface (Priority 2 - Secondary):**
+2.  **🟡 Frontend User Interface :**
     *   Designed the responsive web app using React, TanStack Start, and Tailwind CSS.
-3.  **🟢 QA & Testing (Priority 3 - Secondary):**
+3.  **🟢 QA & Testing :**
     *   Built the comprehensive automated test suite (100 mocked AI and validator test cases).
-4.  **🔵 Documentation & Video (Priority 4 - Support):**
+4.  **🔵 Documentation & Video :**
     *   Responsible for project documentation, user guides, and demo demonstration preparation.
 
 ---
