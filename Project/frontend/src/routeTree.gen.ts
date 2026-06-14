@@ -15,6 +15,8 @@ import { Route as SchemaRouteImport } from './routes/schema'
 import { Route as GeneratorRouteImport } from './routes/generator'
 import { Route as ExportRouteImport } from './routes/export'
 import { Route as DataRouteImport } from './routes/data'
+import { Route as AiSchemaPreviewRouteImport } from './routes/ai-schema-preview'
+import { Route as AiRecommendRouteImport } from './routes/ai-recommend'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -48,6 +50,16 @@ const DataRoute = DataRouteImport.update({
   path: '/data',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiSchemaPreviewRoute = AiSchemaPreviewRouteImport.update({
+  id: '/ai-schema-preview',
+  path: '/ai-schema-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiRecommendRoute = AiRecommendRouteImport.update({
+  id: '/ai-recommend',
+  path: '/ai-recommend',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AiRoute = AiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -62,6 +74,8 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/ai-recommend': typeof AiRecommendRoute
+  '/ai-schema-preview': typeof AiSchemaPreviewRoute
   '/data': typeof DataRoute
   '/export': typeof ExportRoute
   '/generator': typeof GeneratorRoute
@@ -72,6 +86,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/ai-recommend': typeof AiRecommendRoute
+  '/ai-schema-preview': typeof AiSchemaPreviewRoute
   '/data': typeof DataRoute
   '/export': typeof ExportRoute
   '/generator': typeof GeneratorRoute
@@ -83,6 +99,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ai': typeof AiRoute
+  '/ai-recommend': typeof AiRecommendRoute
+  '/ai-schema-preview': typeof AiSchemaPreviewRoute
   '/data': typeof DataRoute
   '/export': typeof ExportRoute
   '/generator': typeof GeneratorRoute
@@ -95,6 +113,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/ai'
+    | '/ai-recommend'
+    | '/ai-schema-preview'
     | '/data'
     | '/export'
     | '/generator'
@@ -105,6 +125,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/ai'
+    | '/ai-recommend'
+    | '/ai-schema-preview'
     | '/data'
     | '/export'
     | '/generator'
@@ -115,6 +137,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/ai'
+    | '/ai-recommend'
+    | '/ai-schema-preview'
     | '/data'
     | '/export'
     | '/generator'
@@ -126,6 +150,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AiRoute: typeof AiRoute
+  AiRecommendRoute: typeof AiRecommendRoute
+  AiSchemaPreviewRoute: typeof AiSchemaPreviewRoute
   DataRoute: typeof DataRoute
   ExportRoute: typeof ExportRoute
   GeneratorRoute: typeof GeneratorRoute
@@ -178,6 +204,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DataRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-schema-preview': {
+      id: '/ai-schema-preview'
+      path: '/ai-schema-preview'
+      fullPath: '/ai-schema-preview'
+      preLoaderRoute: typeof AiSchemaPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-recommend': {
+      id: '/ai-recommend'
+      path: '/ai-recommend'
+      fullPath: '/ai-recommend'
+      preLoaderRoute: typeof AiRecommendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ai': {
       id: '/ai'
       path: '/ai'
@@ -198,6 +238,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AiRoute: AiRoute,
+  AiRecommendRoute: AiRecommendRoute,
+  AiSchemaPreviewRoute: AiSchemaPreviewRoute,
   DataRoute: DataRoute,
   ExportRoute: ExportRoute,
   GeneratorRoute: GeneratorRoute,

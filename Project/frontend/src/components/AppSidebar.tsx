@@ -9,6 +9,8 @@ import {
   Download,
   Boxes,
   Brain,
+  Wand2,
+  Eye,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +40,8 @@ const qaItems = [
 
 const aiItems = [
   { title: "AI Schema Assistant", url: "/ai", icon: Brain },
+  { title: "AI Recommendation", url: "/ai-recommend", icon: Wand2 },
+  { title: "AI Schema Preview", url: "/ai-schema-preview", icon: Eye },
 ];
 
 export function AppSidebar() {
@@ -120,11 +124,11 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-2 group-data-[collapsible=icon]:hidden">
           <div className="h-8 w-8 shrink-0 rounded-full gradient-brand flex items-center justify-center text-xs font-semibold text-white">
-            QE
+            AI
           </div>
           <div className="flex flex-col leading-tight min-w-0">
-            <span className="text-xs font-medium truncate">QA Engineer</span>
-            <span className="text-[10px] text-muted-foreground truncate">enterprise workspace</span>
+            <span className="text-xs font-medium truncate">AI-Powered Mode</span>
+            <span className="text-[10px] text-muted-foreground truncate">Faker + Gemini/Groq/OpenAI</span>
           </div>
         </div>
       </SidebarFooter>

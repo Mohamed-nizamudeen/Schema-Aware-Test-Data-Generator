@@ -6,7 +6,12 @@ client = TestClient(app)
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "message": "Backend is running and connected."}
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "Backend is running" in data["message"]
+    # v2: also has ai_provider and ai_available
+    assert "ai_provider" in data
+    assert "ai_available" in data
 
 def test_parse_schema():
     ddl = """

@@ -1,7 +1,7 @@
 /**
  * api.ts
- * Central API service layer.
- * All fetch calls use VITE_API_BASE env variable – never hardcode localhost.
+ * Central API service layer — extended for AI upgrade.
+ * All fetch calls use VITE_API_BASE env variable.
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
@@ -16,8 +16,21 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 // ── Health ────────────────────────────────────────────────────────────────────
-export async function checkHealth(): Promise<{ status: string; message: string }> {
+export async function checkHealth(): Promise<{ status: string; message: string; ai_provider: string; ai_available: boolean }> {
   const res = await fetch(`${API_BASE}/health`);
+  return handleResponse(res);
+}
+
+// ── AI Status ─────────────────────────────────────────────────────────────────
+export interface AIStatusResponse {
+  provider: string;
+  available: boolean;
+  mode: string;
+  note: string;
+}
+
+export async function getAiStatus(): Promise<AIStatusResponse> {
+  const res = await fetch(`${API_BASE}/api/ai/status`);
   return handleResponse(res);
 }
 
@@ -59,7 +72,59 @@ export async function explainSchema(ddl: string): Promise<ExplainSchemaResponse>
   return handleResponse(res);
 }
 
-// ── Generate data ─────────────────────────────────────────────────────────────
+// ── Classify schema ───────────────────────────────────────────────────────────
+export interface ClassifySchemaResponse {
+  success: boolean;
+  complexity: string;
+  detected_domain: string;
+  selected_domain: string;
+  recommendation: string;
+  reason: string;
+  ai_columns: string[];
+  faker_columns: string[];
+  domain_scores: Record<string, number>;
+}
+
+export async function classifySchema(ddlSchema: string, selectedDomain?: string): Promise<ClassifySchemaResponse> {
+  const res = await fetch(`${API_BASE}/api/ai/classify-schema`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ddl_schema: ddlSchema, selected_domain: selectedDomain }),
+  });
+  return handleResponse(res);
+}
+
+// ── Regenerate schema (AI) ────────────────────────────────────────────────────
+export interface RegenerateSchemaResponse {
+  success: boolean;
+  domain: string;
+  generated_schema_sql: string;
+  explanation: string;
+  tables: string[];
+  warnings: string[];
+  provider_used: string;
+}
+
+export async function regenerateSchema(
+  originalSchema: string,
+  domain: string,
+  userInstruction: string = '',
+): Promise<RegenerateSchemaResponse> {
+  const res = await fetch(`${API_BASE}/api/ai/regenerate-schema`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      original_schema: originalSchema,
+      input_type: 'sql',
+      domain,
+      user_instruction: userInstruction,
+      confirm_regeneration: true,
+    }),
+  });
+  return handleResponse(res);
+}
+
+// ── Generate data (existing) ──────────────────────────────────────────────────
 export interface GenerateDataResponse {
   success: boolean;
   generation_order: string[];
@@ -74,6 +139,75 @@ export async function generateData(ddl: string, numRows: number): Promise<Genera
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ddl, num_rows: numRows }),
+  });
+  return handleResponse(res);
+}
+
+// ── Hybrid generate ───────────────────────────────────────────────────────────
+export interface HybridGenerateResponse {
+  success: boolean;
+  generation_mode_used: string;
+  faker_generated_fields: string[];
+  ai_generated_fields: string[];
+  data: Record<string, Record<string, unknown>[]>;
+  provider_used: string;
+  validation: { passed: boolean; issues: string[] };
+  agent_log: string;
+  downloads: { sql: string; csv: string; report: string };
+}
+
+export async function generateHybrid(
+  ddlSchema: string,
+  rowsPerTable: number,
+  generationMode: 'auto' | 'faker_only' | 'hybrid',
+  domain: string,
+): Promise<HybridGenerateResponse> {
+  const res = await fetch(`${API_BASE}/api/generate/hybrid`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ddl_schema: ddlSchema,
+      rows_per_table: rowsPerTable,
+      generation_mode: generationMode,
+      domain,
+    }),
+  });
+  return handleResponse(res);
+}
+
+// ── Explain generation ────────────────────────────────────────────────────────
+export interface ExplainGenerationResponse {
+  success: boolean;
+  explanation: string;
+  generation_mode_used: string;
+  faker_generated_fields: string[];
+  ai_generated_fields: string[];
+  ai_columns_count: number;
+  faker_columns_count: number;
+  validation_result: { passed: boolean; issues: string[]; issues_count: number };
+}
+
+export async function explainGeneration(params: {
+  schema: string;
+  domain: string;
+  generationModeUsed: string;
+  fakerGeneratedFields: string[];
+  aiGeneratedFields: string[];
+  validationPassed: boolean;
+  validationIssues: string[];
+}): Promise<ExplainGenerationResponse> {
+  const res = await fetch(`${API_BASE}/api/ai/explain-generation`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ddl_schema: params.schema,
+      domain: params.domain,
+      generation_mode_used: params.generationModeUsed,
+      faker_generated_fields: params.fakerGeneratedFields,
+      ai_generated_fields: params.aiGeneratedFields,
+      validation_passed: params.validationPassed,
+      validation_issues: params.validationIssues,
+    }),
   });
   return handleResponse(res);
 }

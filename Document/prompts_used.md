@@ -1,101 +1,125 @@
-# Prompts Used During Development
+# Prompts Used — AI-Powered Schema-Aware Test Data Generator
 
-## Schema-Aware Test Data Generator
-### Development Prompt Documentation
+## 1. Schema Regeneration Prompt
 
-This document captures the key prompts used during the development of this project.
-These prompts demonstrate the iterative AI-assisted workflow.
+Used in: `src/schema_regenerator.py → _build_regeneration_prompt()`
 
----
+```
+You are a senior database architect. Generate a complete, production-quality SQL DDL schema.
 
-## Prompt 1 — Architecture Design
+DOMAIN: {DOMAIN_NAME}
+{DOMAIN_CONTEXT}
 
-**Prompt:**
-> "I want to build a Python prototype for a placement challenge at Infinite Computer Solutions. The project is a Schema-Aware Test Data Generator. It should read SQL DDL, parse tables and FK relationships, generate realistic fake data using Faker, maintain referential integrity (parents before children), and export SQL INSERTs and CSV files. It should also include an agent loop as the AI capability. Suggest a clean modular folder structure and describe each module's responsibility."
+ORIGINAL SCHEMA (user provided, use as context):
+```sql
+{original_ddl}
+```
 
-**Result:**
-Produced the `src/` module breakdown with `ddl_parser`, `schema_models`, `dependency_resolver`, `agent`, `data_generator`, `validators`, and `exporters`.
+REQUIREMENTS:
+1. Return ONLY valid SQL DDL — no explanations, no markdown fences, no comments outside SQL.
+2. Use standard SQL (compatible with PostgreSQL and MySQL).
+3. Every table must have a PRIMARY KEY.
+4. All FOREIGN KEY relationships must be explicit and correct.
+5. Include appropriate NOT NULL, UNIQUE, and DEFAULT constraints.
+6. Use realistic column names and types.
+7. Include at least 6-10 tables with proper relational structure.
+8. Ensure tables are ordered so parent tables come before child tables.
+9. End every CREATE TABLE statement with a semicolon.
 
----
+Return ONLY the SQL DDL:
+```
 
-## Prompt 2 — DDL Parser
-
-**Prompt:**
-> "Write a Python function that uses regex to parse SQL CREATE TABLE statements. It should extract: table name, column name, data type (INTEGER, VARCHAR, DECIMAL, DATE, DATETIME, BOOLEAN, TEXT), PRIMARY KEY (inline and table-level), FOREIGN KEY with referenced table and column, NOT NULL constraint, UNIQUE constraint, and DEFAULT value. Handle commas inside parentheses like DECIMAL(10,2) correctly. Do not use any external SQL parsing library."
-
-**Result:**
-Generated initial `ddl_parser.py` with the `CREATE_TABLE_PATTERN`, `FK_PATTERN`, and `split_table_body()` function.
-
----
-
-## Prompt 3 — Dependency Resolver
-
-**Prompt:**
-> "Implement a topological sort in Python for a foreign key dependency graph. Input: a dict where keys are table names and values are sets of table names they depend on. Output: list of table names ordered so parents appear before children. Use Kahn's algorithm. Raise a custom CircularDependencyError if a cycle is detected. Do not use networkx."
-
-**Result:**
-Produced the `topological_sort()` function and `CircularDependencyError` exception in `dependency_resolver.py`.
-
----
-
-## Prompt 4 — Agent Loop
-
-**Prompt:**
-> "Design a Python class called DataGeneratorAgent with 6 methods representing an AI agent loop: observe(), think(), plan(), act_start(), act_done(), validate_result(), and report(). Each method should log a step-prefixed message like [OBSERVE], [THINK], etc., to an internal list. The agent should classify columns semantically using keyword matching on column names and return hints like 'email', 'phone_number', 'decimal_amount', 'status', 'datetime_recent' etc. that will be consumed by the Faker-based data generator."
-
-**Result:**
-Generated `agent.py` with `DataGeneratorAgent` class and `COLUMN_HINTS` dictionary with 35+ pattern-to-hint mappings.
+**Design choices:**
+- Strict "Return ONLY SQL DDL" instruction eliminates markdown fences and prose.
+- Domain context is provided per-domain (hospital, ecommerce, etc.) as structured guidance.
+- Original schema is passed as context so AI can preserve useful columns.
+- Table ordering requirement enables our topological sort to work without errors.
 
 ---
 
-## Prompt 5 — FK Validation Debug
+## 2. Self-Repair / Fix Prompt
 
-**Prompt:**
-> "I have a FK validation function in Python that checks if every value in a child table's FK column exists in the parent table's PK column. The function is producing false positives — it says FK violations exist even though the data was generated with valid parent IDs. Possible bug: the parent ID lookup uses a dict but the generated IDs might be integers while the FK values are stored as strings. Write defensive code to handle this type mismatch and add a test case that deliberately injects a bad FK value and verifies the issue is detected."
+Used in: `src/schema_regenerator.py → _build_fix_prompt()`
 
-**Result:**
-Identified type coercion as a latent bug, added string-safe comparison in validator, and wrote `test_invalid_fk_detected` in `test_fk_validation.py`.
+```
+The following SQL DDL has a syntax error. Please fix it.
 
----
+ERROR: {error_message}
 
-## Prompt 6 — Streamlit UI Design
+BROKEN DDL:
+```sql
+{broken_ddl}
+```
 
-**Prompt:**
-> "Design a professional Streamlit UI for a test data generator tool. Include: a gradient hero header with project title, metric cards showing tables/columns/rows/FK count, tabs for schema summary, generation order, data preview, agent log, and downloads. Add custom CSS for a dark agent log panel (terminal-style green-on-black text), styled download button strips, and a purple-gradient sidebar. Make it look polished, not like a default Streamlit app."
+Return ONLY the corrected SQL DDL with no explanations or markdown fences:
+```
 
-**Result:**
-Produced the custom CSS block and tab layout in `app.py`.
-
----
-
-## Prompt 7 — README
-
-**Prompt:**
-> "Write a professional README.md for a Python project called 'Schema-Aware Test Data Generator'. Include: problem statement, solution overview, feature table, architecture diagram (ASCII), tech stack table, folder structure, setup instructions (venv, pip install), run instructions, how to use the app, sample input/output, AI agent capability explanation with step table, test instructions, assumptions and limitations, future enhancements, and a team information placeholder. Make it suitable for a placement evaluation."
-
-**Result:**
-Generated the full `README.md`.
+**Design choices:**
+- Error message from `ddl_parser.py` gives the AI precise feedback on what failed.
+- Single retry avoids infinite loops and wasted API quota.
+- System returns error with explanation if both attempts fail.
 
 ---
 
-## Prompt 8 — Test Cases
+## 3. Schema Explanation Prompt
 
-**Prompt:**
-> "Write pytest test cases for a DDL parser module. Tests should cover: correct table count extraction, column count per table, PRIMARY KEY detection (the column's is_primary_key should be True and is_nullable should be False), UNIQUE constraint detection, NOT NULL detection, VARCHAR max_length extraction, data type normalisation (INT → INTEGER), FOREIGN KEY column and referenced table/column, error on invalid DDL input, comments stripped correctly, and multiple FK detection."
+Used in: `src/schema_regenerator.py → _build_explanation_prompt()`
 
-**Result:**
-Generated `test_parser.py` with classes `TestTableDetection`, `TestColumnAttributes`, `TestForeignKeyDetection`, and `TestEdgeCases`.
+```
+Briefly explain this {domain} database schema in 3-5 sentences.
+Focus on the main tables, their relationships, and what business workflow they support.
+Keep it concise and non-technical enough for a stakeholder to understand.
+
+SQL Schema:
+```sql
+{ddl}
+```
+
+Explanation:
+```
+
+**Design choices:**
+- 3-5 sentence constraint prevents verbose output.
+- "Non-technical" instruction makes the explanation useful to non-DBA users in the UI.
 
 ---
 
-## Prompt 9 — Export Module
+## 4. Column Value Generation Prompts
 
-**Prompt:**
-> "Write Python functions to: (1) export a list of row dicts to a CSV file using pandas, (2) generate SQL INSERT statements from generated rows with proper NULL, integer, and string escaping, (3) create a ZIP archive of all CSV files in memory using io.BytesIO and return as bytes for Streamlit download buttons, (4) generate a Markdown report summarising the schema, generation order, validation result, and agent log."
+Used in: `src/hybrid_generator.py → _get_ai_values()`
 
-**Result:**
-Generated `exporters.py` with `export_csv_files`, `get_csv_zip_bytes`, `export_sql_inserts`, and `export_report` functions.
+### Example — Medical Diagnosis
+```
+List 20 short realistic medical diagnosis phrases (e.g., 'Type 2 Diabetes Mellitus', 'Acute Appendicitis'). One per line, no numbering.
+```
+
+### Example — Product Description
+```
+List 20 realistic e-commerce product descriptions (2 sentences each). One per line.
+```
+
+### Example — Generic Column
+```
+List 20 realistic, varied values for a database column named '{col_name}'
+in a {domain} application. Keep each value concise (under 20 words).
+One value per line, no numbering or bullets.
+```
+
+**Design choices:**
+- Pool of 20 values cached per (domain, column) — amortizes API cost across all rows.
+- "One per line, no numbering" gives clean parsing with `.splitlines()`.
+- Specific prompts for known high-value columns; generic fallback for others.
+- Pool is sampled randomly for each row, providing natural variation.
 
 ---
 
-*These prompts are documented as part of the transparent AI usage policy for this prototype challenge submission.*
+## Token Usage Estimates
+
+| Prompt | Input tokens | Output tokens | Frequency |
+|---|---|---|---|
+| Schema regeneration | ~600 | ~2000 | Once per regeneration |
+| Self-repair | ~2200 | ~2000 | At most once per failure |
+| Schema explanation | ~1500 | ~200 | Once per regeneration |
+| Column value pool | ~50 | ~300 | Once per column type (cached) |
+
+With caching, a typical hospital schema + 50-row generation costs approximately **8,000–12,000 tokens total**, well within Gemini's free tier (1M tokens/day).

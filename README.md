@@ -1,219 +1,110 @@
-# Schema-Aware Test Data Generator
+# AI-Powered Schema-Aware Test Data Generator
 
-> **A full-stack AI prototype that generates realistic, constraint-aware test data from SQL schemas — built for Infinite Solutions QA Engineer Placement Challenge.**
-
----
-
-## Problem Statement
-
-QA teams waste hours hand-crafting seed data that respects database constraints. Invalid foreign keys, duplicate primary keys, and unrealistic values constantly break test suites. This tool solves the problem by intelligently parsing your schema and generating production-realistic test data with zero manual effort.
+> **Version 2.0 — Full-Stack AI-Powered Synthetic Data Platform**  
+> Developed for the Placement Technical Round Prototype at Infinite Computer Solutions
 
 ---
 
-## Features
+## 🌟 What is this Project? (For Everyone)
 
-| Feature | Status |
-|---------|--------|
-| SQL DDL parsing (CREATE TABLE) | ✅ |
-| Inline `REFERENCES` FK detection | ✅ |
-| Table-level `FOREIGN KEY` detection | ✅ |
-| `NOT NULL`, `UNIQUE`, `DEFAULT` constraints | ✅ |
-| Topological FK dependency resolution | ✅ |
-| AI agent loop (Observe → Think → Plan → Act → Validate → Report) | ✅ |
-| Semantic column classification (40+ patterns) | ✅ |
-| Faker-powered realistic values | ✅ |
-| Multi-table referential integrity | ✅ |
-| SQL INSERT export | ✅ |
-| CSV export (per-table zip) | ✅ |
-| Markdown validation report | ✅ |
-| Client-side JSON export | ✅ |
-| AI Schema Explanation endpoint | ✅ |
-| Modern React dashboard UI | ✅ |
-| Live backend connection indicator | ✅ |
-| Full test suite (6 tests, 100% pass) | ✅ |
+Imagine you are building a new application (like a hospital booking system or an online shop). Before launching, you need to test it with a lot of data. 
+
+But there are two main problems:
+1. **Security & Privacy:** You cannot use real customer or patient data due to privacy laws.
+2. **Realistic Quality:** If you use simple dummy text (like "test1", "abcde"), it looks fake, makes it hard to test search features, and doesn't represent real-world scenarios.
+
+**The Solution:** This project is a **Smart Test Data Generator**. It reads your database structure (the blueprint) and automatically generates realistic, secure, and fully connected mock data.
+
+### 🔮 The Hybrid Magic (How it Works)
+To keep the application lightning-fast and cost-effective, the system uses two engines:
+*   **The Rule-Based Engine (Faker):** For standard fields like names, phone numbers, emails, addresses, and dates. This is extremely fast and runs locally.
+*   **The AI Engine (Groq + Llama 3):** For complex, domain-specific fields that need human-like writing, such as **medical diagnoses**, **prescriptions**, **course descriptions**, or **product reviews**.
 
 ---
 
-## Tech Stack
+## 🚀 Key Features
 
-### Backend
-- **Python 3.11+** with **FastAPI**
-- **Uvicorn** ASGI server
-- **Faker** for realistic data generation
-- **Pandas** for CSV export
-- Custom regex-based DDL parser (no external SQL parser)
-- Agent-loop architecture (zero LLM cost)
-
-### Frontend
-- **React 19** + **TypeScript**
-- **TanStack Router** (file-based routing)
-- **Vite** dev server
-- **Zustand** global state management
-- **shadcn/ui** component library
-- **Tailwind CSS v4**
+*   🔍 **Schema & Relationship Aware:** The system reads your database tables, detects the connections between them (foreign keys), and figures out the exact order in which data must be created so that it doesn't break any database rules.
+*   🧬 **AI Database Schema Assistant:** Don't have a database schema ready? Tell the AI what kind of business you are building (e.g., Healthcare, Education, E-commerce), and the AI will generate a complete database design for you.
+*   ⚡ **Smart AI Caching:** To avoid calling the AI API repeatedly (which saves time and API limits), the system generates a pool of unique values per column and reuses them.
+*   💾 **Instant Exports:** Once data is generated, you can download it as:
+    *   **SQL Inserts:** Ready to be loaded straight into databases like PostgreSQL or MySQL.
+    *   **CSV ZIP Archive:** Clean tables ready for Microsoft Excel or data analysis tools.
+    *   **AI Summary Report:** A complete markdown file explaining the generation process, validation checks, and data statistics.
 
 ---
 
-## Architecture
+## 👥 Collaborative Team Contributions
 
-```
-┌─────────────────────────────┐       ┌──────────────────────────────────────┐
-│  React Frontend (Vite)      │ HTTP  │  FastAPI Backend                     │
-│  ─────────────────────────  │ ───►  │  ────────────────────────────────    │
-│  /upload   → Schema input   │       │  GET  /health                        │
-│  /schema   → Parsed tables  │       │  POST /api/parse                     │
-│  /generator→ Data config    │       │  POST /api/generate                  │
-│  /data     → Preview table  │       │  POST /api/ai/explain-schema         │
-│  /export   → Download files │       │  GET  /api/download/{sql|csv|report} │
-│  /ai       → AI Explain     │       │                                      │
-│  /validation → QA results   │       │  src/                                │
-│                             │       │    ddl_parser.py  ← parses DDL       │
-│  lib/api.ts  ← API client   │       │    agent.py       ← AI loop          │
-│  lib/store.ts← Zustand      │       │    data_generator.py                 │
-└─────────────────────────────┘       │    validators.py                     │
-                                      │    exporters.py                      │
-                                      └──────────────────────────────────────┘
+This full-stack application was built collaboratively by a team of four, divided by project priorities:
+
+1.  **🔴 Core Engine & Backend API (Priority 1 - Lead):**
+    *   Designed the FastAPI server, DDL parser, topological dependency resolver, and AI-Faker hybrid logic.
+2.  **🟡 Frontend User Interface (Priority 2 - Secondary):**
+    *   Designed the responsive web app using React, TanStack Start, and Tailwind CSS.
+3.  **🟢 QA & Testing (Priority 3 - Secondary):**
+    *   Built the comprehensive automated test suite (100 mocked AI and validator test cases).
+4.  **🔵 Documentation & Video (Priority 4 - Support):**
+    *   Responsible for project documentation, user guides, and demo demonstration preparation.
+
+---
+
+## 🛠️ Setup & Running Locally
+
+### 1. Prerequisite Settings (`.env`)
+Make sure you have your API key set up in `Project/backend/.env`. (Refer to `.env.example` to create this file).
+
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=your_groq_api_key_here
+OPENAI_BASE_URL=https://api.groq.com/openai/v1
+OPENAI_MODEL=llama-3.3-70b-versatile
 ```
 
----
-
-## Setup Instructions
-
-### Prerequisites
-- Python 3.11 or 3.12 (recommended) / 3.13+
-- Node.js 18+
-- npm or bun
-
-### 1. Backend
+### 2. Start the Backend Server
+Navigate to the backend directory, install Python dependencies, and run:
 
 ```bash
 cd Project/backend
-
-# Install dependencies
+python -m venv venv
+venv\Scripts\activate           # Windows command
 pip install -r requirements.txt
-
-# Run the API server
 uvicorn api:app --reload --port 8000
 ```
+*Backend runs on: `http://localhost:8000`*
 
-The backend will be available at **http://localhost:8000**
-
-Interactive API docs: **http://localhost:8000/docs**
-
-### 2. Frontend
+### 3. Start the Frontend Server
+Open a new terminal, navigate to the frontend directory, and run:
 
 ```bash
 cd Project/frontend
-
-# Install dependencies
 npm install
-
-# Copy environment file (already created)
-# .env contains: VITE_API_BASE=http://localhost:8000
-
-# Start dev server
 npm run dev
 ```
-
-The frontend will be available at **http://localhost:5173** (or the port Vite selects)
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Check backend status |
-| `POST` | `/api/parse` | Parse DDL and return table/column/FK metadata |
-| `POST` | `/api/generate` | Generate test data from DDL + row count |
-| `POST` | `/api/ai/explain-schema` | AI explanation of schema structure |
-| `GET` | `/api/download/sql` | Download generated INSERT statements |
-| `GET` | `/api/download/csv` | Download CSV files as ZIP |
-| `GET` | `/api/download/report` | Download Markdown validation report |
-
-### Sample Request — Parse Schema
-
-```bash
-curl -X POST http://localhost:8000/api/parse \
-  -H "Content-Type: application/json" \
-  -d '{"ddl": "CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL);"}'
-```
-
-### Sample Response
-
-```json
-{
-  "success": true,
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        {"name": "id", "type": "INTEGER", "pk": true, "fk": null},
-        {"name": "email", "type": "VARCHAR", "pk": false, "fk": null}
-      ],
-      "foreign_keys": []
-    }
-  ],
-  "generation_order": ["users"],
-  "summary": "Schema Summary -- 1 table(s) detected\n  Table: users\n  ..."
-}
-```
-
-### Sample Request — Generate Data
-
-```bash
-curl -X POST http://localhost:8000/api/generate \
-  -H "Content-Type: application/json" \
-  -d '{"ddl": "CREATE TABLE users (id INTEGER PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL);", "num_rows": 5}'
-```
+*Frontend runs on: `http://localhost:8080`*
 
 ---
 
-## Running Tests
+## 💡 Quick 5-Minute Demo Flow
+
+1.  Open the frontend URL: `http://localhost:8080`
+2.  Go to **Schema Upload** and paste a simple 3-column SQL schema.
+3.  Go to **AI Recommendation**, select a domain like "Healthcare", and click **Analyze**.
+4.  The system will analyze and recommend AI Schema Regeneration. Click **Yes, regenerate schema**.
+5.  On the **AI Schema Preview** screen, watch the Groq LLM generate a fully complete 6-to-8 table relational healthcare schema.
+6.  Click **Use this AI-generated schema**.
+7.  Go to **Data Generator**, choose "Hybrid AI+Faker Mode", and click **Generate**.
+8.  Browse the generated data in the **Data Viewer** and check out the 🧠 symbols showing where AI populated complex medical details.
+9.  Go to the **Export Center** to download your SQL inserts, CSV files, and AI reports!
+
+---
+
+## 🧪 Testing the Codebase
+
+You can run the entire test suite locally to verify the code integrity. All AI requests are mocked, meaning you do not need an internet connection or an API key to run tests:
 
 ```bash
 cd Project/backend
-python -m pytest tests/test_api.py -v
+pytest
+# 100/100 tests passed successfully!
 ```
-
-Expected output:
-```
-6 passed in 1.36s
-```
-
----
-
-## Sample Data
-
-The `sample_data/` directory contains:
-- `sample_schema.sql` — 5-table e-commerce schema
-- `outputs/` — Generated SQL, CSV, and report files (created after first generation run)
-
----
-
-## Limitations
-
-- DDL parser is regex-based; very non-standard SQL may not parse correctly
-- `SERIAL` type is treated as `INTEGER` (autoincrement handled internally)
-- Nullable columns have ~12% chance of NULL (configurable in `data_generator.py`)
-- The AI explanation is rule-based (no external LLM API required)
-- Seed is fixed at 42 for reproducibility; change in `data_generator.py` for variety
-
----
-
-## Future Improvements
-
-- [ ] Add JSON schema input support
-- [ ] Add PostgreSQL `pg_dump` parsing
-- [ ] Connect to real LLM (Gemini/OpenAI) for smarter AI explanations
-- [ ] Add column-level data masking (PII)
-- [ ] Add database connection → generate directly into a database
-- [ ] Add progress streaming via Server-Sent Events
-- [ ] Add schema version comparison
-- [ ] Add dark mode toggle
-
----
-
-## Team
-
-Built for the **Infinite Solutions QA Engineer Placement Challenge**

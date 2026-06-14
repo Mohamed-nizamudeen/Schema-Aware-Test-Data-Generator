@@ -8,6 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { useStore } from "@/lib/store";
+import { checkHealth } from "@/lib/api";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -107,6 +109,27 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { setBackendStatus, setAiProviderAvailable, setAiProviderName } = useStore();
+
+  // Poll backend health + AI status on mount
+  useEffect(() => {
+    async function init() {
+      try {
+        const health = await checkHealth();
+        if (health.status === "ok") {
+          setBackendStatus("connected");
+          setAiProviderAvailable(health.ai_available ?? false);
+          setAiProviderName(health.ai_provider ?? "fallback");
+        } else {
+          setBackendStatus("disconnected");
+        }
+      } catch {
+        setBackendStatus("disconnected");
+        setAiProviderAvailable(false);
+      }
+    }
+    init();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
