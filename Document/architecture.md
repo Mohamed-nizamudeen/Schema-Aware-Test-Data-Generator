@@ -46,7 +46,7 @@ schema_classifier.py (no AI call — pure keyword matching)
   ▼  [if user selects AI regeneration]
 schema_regenerator.py
   • Builds domain-specific prompt
-  • Calls AI provider (Gemini / Ollama / OpenAI)
+  • Calls AI provider (Gemini / Groq / OpenAI)
   • Validates generated DDL using ddl_parser
   • Self-repairs invalid DDL (1 retry)
   • Returns SQL + explanation + table list
@@ -91,7 +91,7 @@ Download: SQL | CSV ZIP | JSON | MD Report | AI Report
 | `schema_models.py` | Dataclasses: SchemaModel, TableModel, ColumnModel, ForeignKeyModel |
 | `schema_classifier.py` | Keyword-based complexity + domain detection |
 | `schema_regenerator.py` | AI-powered full schema generation |
-| `ai_provider.py` | Provider abstraction (Gemini, Ollama, OpenAI, Fallback) |
+| `ai_provider.py` | Provider abstraction (Gemini, Groq, OpenAI, Fallback) |
 | `hybrid_generator.py` | Routing columns to Faker vs AI, value caching |
 | `dependency_resolver.py` | Topological sort for FK-safe generation order |
 | `data_generator.py` | Pure Faker generation (original, preserved) |
